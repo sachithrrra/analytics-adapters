@@ -1,0 +1,17 @@
+{
+  "name": "analytics-adapters-root",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "pnpm --filter analytics-adapters run build && pnpm -r run test",
+    "typecheck": "pnpm -r run typecheck",
+    "changeset": "changeset",
+    "release": "pnpm build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.0",
+    "typescript": "^5.6.0"
+  },
+  "packageManager": "pnpm@11.17.0"
+}

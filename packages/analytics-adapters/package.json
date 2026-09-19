@@ -1,0 +1,87 @@
+{
+  "name": "analytics-adapters",
+  "version": "1.0.0",
+  "description": "Unified analytics client with swappable provider adapters (Google Analytics) and framework integrations for Next.js and TanStack Router.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./google": {
+      "types": "./dist/google.d.ts",
+      "default": "./dist/google.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "default": "./dist/react.js"
+    },
+    "./next": {
+      "types": "./dist/next.d.ts",
+      "default": "./dist/next.js"
+    },
+    "./tanstack": {
+      "types": "./dist/tanstack.d.ts",
+      "default": "./dist/tanstack.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sachithrrra/analytics-adapters.git",
+    "directory": "packages/analytics-adapters"
+  },
+  "homepage": "https://github.com/sachithrrra/analytics-adapters#readme",
+  "bugs": {
+    "url": "https://github.com/sachithrrra/analytics-adapters/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "next": ">=14",
+    "@tanstack/react-router": ">=1"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "next": {
+      "optional": true
+    },
+    "@tanstack/react-router": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "jsdom": "^25.0.0",
+    "react": "^19.0.0",
+    "tsdown": "^0.15.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0",
+    "next": "^16.0.0",
+    "@tanstack/react-router": "^1.0.0"
+  },
+  "keywords": [
+    "analytics",
+    "google-analytics",
+    "ga4",
+    "gtag",
+    "nextjs",
+    "tanstack"
+  ]
+}
