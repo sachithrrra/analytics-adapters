@@ -65,6 +65,24 @@ import { analytics } from '~/lib/analytics'
 <Analytics analytics={analytics}>{children}</Analytics>
 ```
 
+## Plausible
+
+Wraps the official [`@plausible-analytics/tracker`](https://www.npmjs.com/package/@plausible-analytics/tracker); install it alongside:
+
+```sh
+pnpm add @plausible-analytics/tracker
+```
+
+```ts
+import { plausible } from 'analytics-adapters/plausible'
+
+export const analytics = createAnalytics(plausible({ domain: 'example.com' }))
+```
+
+Or zero-config: `<PlausibleAnalytics domain="example.com">` from `analytics-adapters/next` or `analytics-adapters/tanstack`.
+
+Options are the tracker's [`PlausibleConfig`](https://plausible.io/docs/script-extensions) (`endpoint` for self-hosted/proxy, `outboundLinks`, `fileDownloads`, `revenue`, …) plus `defer` (default `true`: load on `requestIdleCallback`; calls queue meanwhile). `autoCapturePageviews` is forced off so `page()` is the only pageview source. Props are stringified (Plausible only accepts strings). `identify`, `consent`, and `get` are no-ops — Plausible is cookieless.
+
 ## Any other React app
 
 `analytics-adapters/react` exports the building blocks: `AnalyticsProvider`, `useAnalytics`, and `usePageview(path)` — pass whatever your router says the current path is.

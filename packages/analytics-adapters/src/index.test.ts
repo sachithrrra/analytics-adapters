@@ -1,6 +1,10 @@
-import { describe, expect, it, beforeEach } from 'vitest'
+import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { createAnalytics } from './index'
 import { google } from './google'
+
+vi.mock('@plausible-analytics/tracker', () => ({ init: vi.fn(), track: vi.fn() }))
+import { plausible } from './plausible'
+import * as tracker from '@plausible-analytics/tracker'
 
 const dl = () => (window as any).dataLayer as IArguments[]
 
@@ -79,5 +83,36 @@ describe('google adapter', () => {
     a.load()
     a.track('x')
     expect(calls).toEqual(['a:load', 'b:load', 'a:track', 'b:track'])
+  })
+})
+
+describe('plausible adapter', () => {
+  const tick = () => new Promise((r) => setTimeout(r, 0))
+  beforeEach(() => vi.clearAllMocks())
+
+  it('inits without auto pageviews, orders and stringifies events', async () => {
+    const a = createAnalytics(plausible({ domain: 'example.com', defer: false }))
+    a.page({ page_path: '/x', page_location: 'https://example.com/x', page_title: 't', extra: 1 })
+    a.track('signup', { plan: 'pro', n: 2 })
+    a.track('bare')
+    await tick()
+    expect(tracker.init).toHaveBeenCalledWith({ domain: 'example.com', autoCapturePageviews: false })
+    expect(vi.mocked(tracker.track).mock.calls).toEqual([
+      ['pageview', { url: 'https://example.com/x', props: { extra: '1' } }],
+      ['signup', { props: { plan: 'pro', n: '2' } }],
+      ['bare', {}],
+    ])
+  })
+
+  it('defer waits for idle', async () => {
+    let idle: (() => void) | undefined
+    ;(window as any).requestIdleCallback = (cb: () => void) => (idle = cb)
+    createAnalytics(plausible({ domain: 'd' })).track('x')
+    await tick()
+    expect(tracker.init).not.toHaveBeenCalled()
+    idle!()
+    await tick()
+    expect(tracker.track).toHaveBeenCalledWith('x', {})
+    delete (window as any).requestIdleCallback
   })
 })

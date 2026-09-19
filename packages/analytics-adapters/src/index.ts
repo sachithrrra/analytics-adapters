@@ -1,9 +1,7 @@
 export type Props = Record<string, unknown>
 
-/** Google Consent Mode v2 keys; other providers map what they support. */
-export type Consent = Partial<
-  Record<'analytics_storage' | 'ad_storage' | 'ad_user_data' | 'ad_personalization', 'granted' | 'denied'>
->
+/** Google Consent Mode keys; other providers map what they support. */
+export type Consent = Gtag.ConsentParams
 
 export type Adapter = {
   /** Inject the provider script. Called once per adapter by `createAnalytics`. */

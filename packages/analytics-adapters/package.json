@@ -1,7 +1,7 @@
 {
   "name": "analytics-adapters",
-  "version": "1.0.0",
-  "description": "Unified analytics client with swappable provider adapters (Google Analytics) and framework integrations for Next.js and TanStack Router.",
+  "version": "1.1.0",
+  "description": "One analytics API with swappable provider adapters and framework integrations.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -31,6 +31,10 @@
     "./tanstack": {
       "types": "./dist/tanstack.d.ts",
       "default": "./dist/tanstack.js"
+    },
+    "./plausible": {
+      "types": "./dist/plausible.d.ts",
+      "default": "./dist/plausible.js"
     }
   },
   "repository": {
@@ -51,9 +55,10 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "react": ">=18",
+    "@plausible-analytics/tracker": ">=0.4",
+    "@tanstack/react-router": ">=1",
     "next": ">=14",
-    "@tanstack/react-router": ">=1"
+    "react": ">=18"
   },
   "peerDependenciesMeta": {
     "react": {
@@ -64,24 +69,32 @@
     },
     "@tanstack/react-router": {
       "optional": true
+    },
+    "@plausible-analytics/tracker": {
+      "optional": true
     }
   },
   "devDependencies": {
+    "@plausible-analytics/tracker": "^0.4.6",
+    "@tanstack/react-router": "^1.0.0",
     "@types/react": "^19.0.0",
     "jsdom": "^25.0.0",
+    "next": "^16.0.0",
     "react": "^19.0.0",
     "tsdown": "^0.15.0",
     "typescript": "^5.6.0",
-    "vitest": "^3.0.0",
-    "next": "^16.0.0",
-    "@tanstack/react-router": "^1.0.0"
+    "vitest": "^3.0.0"
   },
   "keywords": [
     "analytics",
     "google-analytics",
+    "plausible",
     "ga4",
     "gtag",
     "nextjs",
     "tanstack"
-  ]
+  ],
+  "dependencies": {
+    "@types/gtag.js": "^0.0.20"
+  }
 }

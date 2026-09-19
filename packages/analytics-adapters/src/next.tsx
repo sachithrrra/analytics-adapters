@@ -3,6 +3,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { Suspense, useState, type ReactNode } from 'react'
 import { createAnalytics, type Analytics } from './index'
 import { google, type GoogleOptions } from './google'
+import { plausible, type PlausibleOptions } from './plausible'
 import { AnalyticsProvider, usePageview } from './react'
 
 function Pageview() {
@@ -33,3 +34,9 @@ export function GoogleAnalytics({ children, ...opts }: GoogleOptions & { childre
 }
 
 export { useAnalytics } from './react'
+
+/** Zero-config: `<PlausibleAnalytics domain="example.com" />` in the root layout. */
+export function PlausibleAnalytics({ children, ...opts }: PlausibleOptions & { children?: ReactNode }) {
+  const [analytics] = useState(() => createAnalytics(plausible(opts)))
+  return <Analytics analytics={analytics}>{children}</Analytics>
+}

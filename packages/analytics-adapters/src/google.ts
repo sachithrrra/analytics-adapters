@@ -15,10 +15,10 @@ export type GoogleOptions = {
 
 export function google({ id, nonce, consent, defer = true }: GoogleOptions): Adapter {
   // gtag must push `arguments`, not an array: GA reads it as an Arguments object.
-  const gtag = function () {
+  const gtag: Gtag.Gtag = function () {
     // eslint-disable-next-line prefer-rest-params
     ;(window as any).dataLayer.push(arguments)
-  } as (...args: unknown[]) => void
+  }
 
   const track: Adapter['track'] = (name, props) => gtag('event', name, props)
 
@@ -50,7 +50,7 @@ export function google({ id, nonce, consent, defer = true }: GoogleOptions): Ada
       new Promise((resolve) => {
         // gtag never calls back when the script is blocked (adblock/CSP); don't hang the caller.
         setTimeout(resolve, GET_TIMEOUT)
-        gtag('get', id, field, resolve)
+        gtag('get', id, field, (v) => resolve(typeof v === 'string' ? v : undefined))
       }),
   }
 }
