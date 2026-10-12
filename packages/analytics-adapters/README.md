@@ -1,115 +1,81 @@
 # analytics-adapters
 
-One analytics API. Swap the provider, keep your calls.
+One analytics API. Swap the provider, keep your calls. ~1 kB gzipped.
+
+**Providers:** Google Analytics 4, Plausible, or your own.
+**Frameworks:** Next.js (App + Pages Router), TanStack Start/Router, Astro, any React router.
 
 ```sh
 pnpm add analytics-adapters
 ```
 
-```ts
-// lib/analytics.ts
-import { createAnalytics } from 'analytics-adapters'
-import { google } from 'analytics-adapters/google'
+## Setup
 
-export const analytics = createAnalytics(google({ id: 'G-XXXXXXX' }))
-
-analytics.track('signup', { plan: 'pro' })
-analytics.page({ page_path: '/pricing' })
-analytics.identify('user_123')
-```
-
-Every call is a no-op on the server, so it's safe to import anywhere.
-
-## Next.js Google Analytics
+**Next.js** — `app/layout.tsx` or `pages/_app.tsx`
 
 ```tsx
-// app/layout.tsx
 import { GoogleAnalytics } from 'analytics-adapters/next'
 
 <GoogleAnalytics id="G-XXXXXXX">{children}</GoogleAnalytics>
 ```
 
-Pageviews track on every navigation. `useAnalytics()` works in any client component for custom events. Works in `pages/_app.tsx` too.
-
-For multiple providers or a custom adapter, pass your own instance:
+**TanStack Start** — `routes/__root.tsx`
 
 ```tsx
-// app/layout.tsx
-import { Analytics } from 'analytics-adapters/next'
-import { analytics } from '@/lib/analytics'
-
-export default function RootLayout({ children }) {
-  return (
-    <html><body><Analytics analytics={analytics}>{children}</Analytics></body></html>
-  )
-}
-```
-
-`<Analytics>` is a client component; it wraps children in the provider and sends a `page_view` on every App Router navigation. Use `useAnalytics()` from the same subpath in client components.
-
-## TanStack Start Google Analytics
-
-```tsx
-// routes/__root.tsx
 import { GoogleAnalytics } from 'analytics-adapters/tanstack'
 
 <GoogleAnalytics id="G-XXXXXXX">{children}</GoogleAnalytics>
 ```
 
-Or with your own instance:
+Custom events in either: `useAnalytics().track('signup')`.
 
-```tsx
-import { Analytics } from 'analytics-adapters/tanstack'
-import { analytics } from '~/lib/analytics'
+**Astro** — in your layout
 
-<Analytics analytics={analytics}>{children}</Analytics>
+```astro
+<script>
+  import { googleAnalytics } from 'analytics-adapters/astro'
+
+  googleAnalytics({ id: 'G-XXXXXXX' })
+</script>
 ```
 
-## Plausible
+Works with or without `<ClientRouter />`. The call returns the instance for `track()`.
 
-Wraps the official [`@plausible-analytics/tracker`](https://www.npmjs.com/package/@plausible-analytics/tracker); install it alongside:
+**Other React routers** — `analytics-adapters/react`: `AnalyticsProvider`, `useAnalytics`, `usePageview(path)`.
 
-```sh
-pnpm add @plausible-analytics/tracker
-```
+Swap `GoogleAnalytics` / `googleAnalytics` for `PlausibleAnalytics` / `plausibleAnalytics({ domain })` to use Plausible.
+
+## API
 
 ```ts
-import { plausible } from 'analytics-adapters/plausible'
+import { createAnalytics } from 'analytics-adapters'
+import { google } from 'analytics-adapters/google'
 
-export const analytics = createAnalytics(plausible({ domain: 'example.com' }))
+const analytics = createAnalytics(google({ id: 'G-XXXXXXX' }))
+
+analytics.page({ page_path: '/pricing' })
+analytics.track('signup', { plan: 'pro' })
+analytics.identify('user_123')
+analytics.consent({ analytics_storage: 'granted' })
+await analytics.get('client_id') // undefined after 3s if blocked
 ```
 
-Or zero-config: `<PlausibleAnalytics domain="example.com">` from `analytics-adapters/next` or `analytics-adapters/tanstack`.
+No-op on the server. Calls before load auto-load first, so nothing drops. Pass the instance to `<Analytics analytics={…}>` (Next/TanStack) or `trackPageviews(analytics)` (Astro).
 
-Options are the tracker's [`PlausibleConfig`](https://plausible.io/docs/script-extensions) (`endpoint` for self-hosted/proxy, `outboundLinks`, `fileDownloads`, `revenue`, …) plus `defer` (default `true`: load on `requestIdleCallback`; calls queue meanwhile). `autoCapturePageviews` is forced off so `page()` is the only pageview source. Props are stringified (Plausible only accepts strings). `identify`, `consent`, and `get` are no-ops — Plausible is cookieless.
+Pageviews come only from the router (auto `page_view` is disabled), so navigations never double-count.
 
-## Any other React app
+## Providers
 
-`analytics-adapters/react` exports the building blocks: `AnalyticsProvider`, `useAnalytics`, and `usePageview(path)` — pass whatever your router says the current path is.
+**Google** — `google({ id, nonce?, consent?, defer? })`. `consent` sets Consent Mode defaults. `defer` (default `true`) injects the script on `requestIdleCallback`.
 
-## Google options
+**Plausible** — install `@plausible-analytics/tracker` alongside. `plausible({ domain, ...PlausibleConfig, defer? })`. Props are stringified; `identify`, `consent`, `get` are no-ops.
 
-| option          | default       |                                  |
-| --------------- | ------------- | -------------------------------- |
-| `id`            | required      | GA4 measurement ID (`G-…`)       |
-| `nonce`         |               | CSP nonce for the script tag     |
-| `consent`       |               | Consent Mode defaults, e.g. `{ analytics_storage: 'denied' }` |
-| `defer`         | `true`        | Inject the script on `requestIdleCallback`; events queue meanwhile |
-
-Calls made before `load()` auto-load first, so nothing is ever dropped. Update consent later with `analytics.consent({ analytics_storage: 'granted' })`. Read values with `await analytics.get('client_id')` (resolves `undefined` after 3s if the script is blocked).
-
-Auto pageviews are disabled (`send_page_view: false`); `usePageview` / `page()` is the single source of truth, so SPA navigations never double-count.
-
-## Custom adapter
+**Custom** — implement `Adapter`. Pass an array to fan out:
 
 ```ts
 import type { Adapter } from 'analytics-adapters'
 
-const logger: Adapter = {
-  load() {},
-  page: (p) => console.log('page', p),
-  track: (n, p) => console.log(n, p),
-}
+const logger: Adapter = { load() {}, page: console.log, track: console.log }
 
-createAnalytics([google({ id: 'G-X' }), logger]) // fans out to all
+createAnalytics([google({ id: 'G-X' }), logger])
 ```

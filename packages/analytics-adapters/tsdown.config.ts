@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entry: ['src/index.ts', 'src/google.ts', 'src/plausible.ts', 'src/react.tsx', 'src/next.tsx', 'src/tanstack.tsx'],
+  entry: ['src/index.ts', 'src/google.ts', 'src/plausible.ts', 'src/react.tsx', 'src/next.tsx', 'src/tanstack.tsx', 'src/astro.ts'],
   format: 'esm',
   dts: true,
   clean: true,

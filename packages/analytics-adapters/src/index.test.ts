@@ -116,3 +116,16 @@ describe('plausible adapter', () => {
     delete (window as any).requestIdleCallback
   })
 })
+
+describe('astro', () => {
+  it('pageview on load and on each ClientRouter swap', async () => {
+    const { trackPageviews } = await import('./astro')
+    const page = vi.fn()
+    trackPageviews({ page } as any)
+    expect(page).toHaveBeenCalledTimes(1)
+    history.pushState({}, '', '/next?q=1')
+    document.dispatchEvent(new Event('astro:after-swap'))
+    expect(page).toHaveBeenCalledTimes(2)
+    expect(page.mock.calls[1][0].page_path).toBe('/next?q=1')
+  })
+})

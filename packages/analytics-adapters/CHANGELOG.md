@@ -1,5 +1,11 @@
 # analytics-adapters
 
+## 1.2.0
+
+### Minor Changes
+
+- New `analytics-adapters/astro` entry: `googleAnalytics(opts)`, `plausibleAnalytics(opts)`, and `trackPageviews(analytics)`. Sends a pageview on load and after every `<ClientRouter />` navigation.
+
 ## 1.1.0
 
 ### Minor Changes
