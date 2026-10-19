@@ -1,3 +1,4 @@
+/// <reference types="gtag.js" />
 export type Props = Record<string, unknown>
 
 /** Google Consent Mode keys; other providers map what they support. */

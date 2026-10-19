@@ -22,6 +22,7 @@ Docs: [`packages/analytics-adapters`](./packages/analytics-adapters#readme)
 | [`packages/analytics-adapters`](./packages/analytics-adapters) | published package |
 | [`apps/example-next`](./apps/example-next) | Next.js demo |
 | [`apps/example-tanstack`](./apps/example-tanstack) | TanStack Start demo |
+| [`recipes`](./recipes) | how-tos, e.g. [GA4 bot spam](./recipes/ga4-bot-spam.md) |
 
 ```sh
 pnpm install

@@ -1,3 +1,4 @@
+/// <reference types="gtag.js" />
 import type { Adapter, Consent } from './index'
 
 const GET_TIMEOUT = 3000
@@ -11,24 +12,32 @@ export type GoogleOptions = {
   consent?: Consent
   /** Inject the script when the browser is idle (default). `false` injects immediately. */
   defer?: boolean
+  /** Extra `gtag('config')` params sent with every hit, e.g. `{ traffic_type: 'external' }`. */
+  config?: Gtag.ConfigParams & Gtag.CustomParams
+  /** Runs once in the browser before load; return `true` to send nothing this page load (e.g. bot detection). */
+  skip?: () => boolean
 }
 
-export function google({ id, nonce, consent, defer = true }: GoogleOptions): Adapter {
+export function google({ id, nonce, consent, defer = true, config, skip }: GoogleOptions): Adapter {
+  // send_page_view:false on every config call so page() is the single source of pageviews (no double count on SPA nav).
+  const base = { ...config, send_page_view: false }
+  let off = false
   // gtag must push `arguments`, not an array: GA reads it as an Arguments object.
   const gtag: Gtag.Gtag = function () {
     // eslint-disable-next-line prefer-rest-params
-    ;(window as any).dataLayer.push(arguments)
+    if (!off) (window as any).dataLayer.push(arguments)
   }
 
   const track: Adapter['track'] = (name, props) => gtag('event', name, props)
 
   return {
     load() {
+      // Checked here, not in google(): the adapter may be created on the server where there's no screen.
+      if (skip?.()) return void (off = true)
       ;(window as any).dataLayer ||= []
       if (consent) gtag('consent', 'default', consent)
       gtag('js', new Date())
-      // send_page_view:false so page() is the single source of pageviews (no double count on SPA nav).
-      gtag('config', id, { send_page_view: false })
+      gtag('config', id, base)
       // Events queue in dataLayer, so the script itself can wait for idle without losing anything.
       const inject = () => {
         const s = document.createElement('script')
@@ -43,7 +52,7 @@ export function google({ id, nonce, consent, defer = true }: GoogleOptions): Ada
     track,
     page: (props) => track('page_view', props),
     identify(userId, traits) {
-      gtag('config', id, { user_id: userId, ...traits })
+      gtag('config', id, { ...base, user_id: userId, ...traits })
     },
     consent: (state) => gtag('consent', 'update', state),
     get: (field) =>

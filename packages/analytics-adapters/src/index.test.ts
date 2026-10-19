@@ -76,6 +76,26 @@ describe('google adapter', () => {
     expect(await createAnalytics({ load() {}, page() {}, track() {} }).get('client_id')).toBeUndefined()
   })
 
+  it('config params ride on every config call; identify never sends a page_view', () => {
+    const a = createAnalytics(google({ id: 'G-X', config: { traffic_type: 'external' } }))
+    a.identify('u1')
+    const configs = dl().filter((args) => args[0] === 'config').map((a) => Array.from(a))
+    expect(configs).toEqual([
+      ['config', 'G-X', { traffic_type: 'external', send_page_view: false }],
+      ['config', 'G-X', { traffic_type: 'external', send_page_view: false, user_id: 'u1' }],
+    ])
+  })
+
+  it('skip sends nothing when true, works normally otherwise', () => {
+    const a = createAnalytics(google({ id: 'G-B', skip: () => true }))
+    a.page({ page_path: '/x' })
+    a.track('signup')
+    expect(document.querySelector('script')).toBeNull()
+    expect((window as any).dataLayer).toBeUndefined()
+    createAnalytics(google({ id: 'G-H', skip: () => false })).page({ page_path: '/x' })
+    expect(dl().map((args) => args[0])).toEqual(['js', 'config', 'event'])
+  })
+
   it('fans out to multiple adapters', () => {
     const calls: string[] = []
     const fake = (n: string) => ({ load: () => calls.push(n + ':load'), page: () => {}, track: () => calls.push(n + ':track') })

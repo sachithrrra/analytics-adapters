@@ -66,7 +66,9 @@ Pageviews come only from the router (auto `page_view` is disabled), so navigatio
 
 ## Providers
 
-**Google** — `google({ id, nonce?, consent?, defer? })`. `consent` sets Consent Mode defaults. `defer` (default `true`) injects the script on `requestIdleCallback`.
+**Google** — `google({ id, nonce?, consent?, defer?, config?, skip? })`. `consent` sets Consent Mode defaults. `defer` (default `true`) injects the script on `requestIdleCallback`. `config` adds `gtag('config')` params to every hit. `skip` runs once in the browser; return `true` to send nothing for that page load.
+
+Recipe: [filtering GA4 bot spam](https://github.com/sachithrrra/analytics-adapters/blob/main/recipes/ga4-bot-spam.md) with `skip` + `config`.
 
 **Plausible** — install `@plausible-analytics/tracker` alongside. `plausible({ domain, ...PlausibleConfig, defer? })`. Props are stringified; `identify`, `consent`, `get` are no-ops.
 
